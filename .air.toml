@@ -1,0 +1,15 @@
+#:schema https://json.schemastore.org/any.json
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "templ generate && npx @tailwindcss/cli -i ./global.css -o ./static/css/global.css && go build -o ./tmp/main ./cmd/ipam"
+  bin = "./tmp/main"
+  delay = 1000
+  exclude_dir = ["tmp", "vendor", "node_modules"]
+  include_ext = ["go", "templ", "css"]
+  exclude_regex = ["_test.go", "_templ.go"]
+
+[log]
+  time = false

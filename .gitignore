@@ -30,3 +30,10 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Dependency directories
+node_modules/
+
+# Temporary files
+tmp/
+bin/
