@@ -11,7 +11,7 @@ A simple **IP Address Management (IPAM)** tool built with the **GOTH** stack:
 > [!WARNING]
 > **This application has NO authentication or authorization.**
 > It is intended for use in **private / internal networks only**.
-> Do **not** expose it to the public internet without adding an authentication layer (e.g., reverse proxy with basic auth, VPN, etc.).
+> **DO NOT** expose it to the public internet without adding an authentication layer (e.g., reverse proxy with basic auth, VPN, etc.).
 
 ---
 
