@@ -1,4 +1,4 @@
-.PHONY: run build clean
+.PHONY: run build clean test
 
 run:
 	@echo "Starting development server..."
@@ -12,3 +12,7 @@ build:
 
 clean:
 	@rm -rf ./tmp ./bin
+
+test:
+	@echo "Running tests (Testcontainers will start PostgreSQL automatically)..."
+	@go test ./internal/handlers/... -v -timeout 120s
