@@ -48,7 +48,7 @@ func SubnetList(subnets []models.Subnet) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col gap-8\"><div class=\"flex justify-between items-center\"><h1 class=\"text-3xl font-bold\">Subnets</h1><label for=\"create-subnet-modal\" class=\"btn btn-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mr-2\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg> Add Subnet</label></div><input type=\"checkbox\" id=\"create-subnet-modal\" class=\"modal-toggle\"><div class=\"modal\"><div class=\"modal-box\"><h3 class=\"font-bold text-lg mb-4\">Create New Subnet</h3><form hx-post=\"/subnets\" hx-target=\"#body\" hx-swap=\"outerHTML\" class=\"flex flex-col gap-4\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Subnet Name</span></label> <input type=\"text\" name=\"name\" placeholder=\"e.g. Production LAN\" class=\"input input-bordered w-full\" required></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">CIDR Range</span></label> <input type=\"text\" name=\"cidr\" placeholder=\"10.0.0.0/24\" class=\"input input-bordered w-full\" required></div><div class=\"modal-action\"><label for=\"create-subnet-modal\" class=\"btn btn-ghost\">Cancel</label> <button type=\"submit\" class=\"btn btn-primary\" onclick=\"document.getElementById('create-subnet-modal').checked = false\">Create Subnet</button></div></form></div></div><div id=\"subnet-list\" class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col gap-8\"><div class=\"flex justify-between items-center\"><h1 class=\"text-3xl font-bold\">Subnets</h1><label for=\"create-subnet-modal\" class=\"btn btn-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mr-2\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg> Add Subnet</label></div><input type=\"checkbox\" id=\"create-subnet-modal\" class=\"modal-toggle\"><div class=\"modal\"><div class=\"modal-box\"><h3 class=\"font-bold text-lg mb-4\">Create New Subnet</h3><form hx-post=\"/subnets\" hx-target=\"#body\" hx-swap=\"outerHTML\" class=\"flex flex-col gap-4\" onsubmit=\"return validateSubnetForm(this)\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Subnet Name</span></label> <input type=\"text\" name=\"name\" placeholder=\"e.g. Production LAN\" class=\"input input-bordered w-full\" required></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">CIDR Range</span></label><input type=\"text\" name=\"cidr\" id=\"cidr-input\" placeholder=\"10.0.0.0/24\" class=\"input input-bordered w-full\" required pattern=\"\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2}\" title=\"IPv4 CIDR 形式 (例: 10.0.0.0/24) で入力してください\" oninput=\"checkCidrPrefix(this)\"> <span id=\"cidr-error\" class=\"label-text-alt text-error mt-1 hidden\">prefix は /16 以上 (例: /16, /24) を指定してください</span></div><div class=\"modal-action\"><label for=\"create-subnet-modal\" class=\"btn btn-ghost\">Cancel</label><button type=\"submit\" id=\"create-subnet-btn\" class=\"btn btn-primary\">Create Subnet</button></div></form><script>\n\t\t\t\t\t\t// checkCidrPrefix: リアルタイムに prefix 長を検証する。\n\t\t\t\t\t\t// エラー時はエラーメッセージを表示し、送信ボタンを disabled にする。\n\t\t\t\t\t\tfunction checkCidrPrefix(input) {\n\t\t\t\t\t\t\tvar match = input.value.match(/\\/(\\d+)$/);\n\t\t\t\t\t\t\tvar errorEl = document.getElementById('cidr-error');\n\t\t\t\t\t\t\tvar btn = document.getElementById('create-subnet-btn');\n\t\t\t\t\t\t\tvar isValid = true;\n\t\t\t\t\t\t\tif (match) {\n\t\t\t\t\t\t\t\tvar prefix = parseInt(match[1], 10);\n\t\t\t\t\t\t\t\tif (prefix < 16) {\n\t\t\t\t\t\t\t\t\tinput.setCustomValidity('prefix は /16 以上を指定してください');\n\t\t\t\t\t\t\t\t\terrorEl.classList.remove('hidden');\n\t\t\t\t\t\t\t\t\tisValid = false;\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\tif (isValid) {\n\t\t\t\t\t\t\t\tinput.setCustomValidity('');\n\t\t\t\t\t\t\t\terrorEl.classList.add('hidden');\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t// エラー中は送信ボタンを無効化する。\n\t\t\t\t\t\t\tbtn.disabled = !isValid;\n\t\t\t\t\t\t\treturn isValid;\n\t\t\t\t\t\t}\n\t\t\t\t\t\t// validateSubnetForm: フォーム送信時の最終チェック。\n\t\t\t\t\t\t// バリデーション成功時のみモーダルを閉じ、hx-post を通過させる。\n\t\t\t\t\t\tfunction validateSubnetForm(form) {\n\t\t\t\t\t\t\tvar cidrInput = document.getElementById('cidr-input');\n\t\t\t\t\t\t\tvar valid = checkCidrPrefix(cidrInput);\n\t\t\t\t\t\t\tif (valid) {\n\t\t\t\t\t\t\t\t// バリデーション成功時のみモーダルを閉じる。\n\t\t\t\t\t\t\t\tdocument.getElementById('create-subnet-modal').checked = false;\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\treturn valid;\n\t\t\t\t\t\t}\n\t\t\t\t\t</script></div></div><div id=\"subnet-list\" class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -108,7 +108,7 @@ func SubnetCard(s models.Subnet) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(s.CIDR)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 68, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 126, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -121,7 +121,7 @@ func SubnetCard(s models.Subnet) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(s.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 69, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 127, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -134,7 +134,7 @@ func SubnetCard(s models.Subnet) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/subnets/%s", s.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 73, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 131, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -147,7 +147,7 @@ func SubnetCard(s models.Subnet) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Are you sure you want to delete %s (%s)?", s.Name, s.CIDR))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 74, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 132, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func SubnetCard(s models.Subnet) templ.Component {
 		var templ_7745c5c3_Var8 templ.SafeURL
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/subnets/%s", s.ID)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 85, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/subnet.templ`, Line: 143, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {

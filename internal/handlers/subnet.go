@@ -34,9 +34,9 @@ func HandleSubnetList(w http.ResponseWriter, r *http.Request) {
 	component.Render(context.Background(), w)
 }
 
-// maxPrefixLen is the minimum prefix length (= narrowest allowed subnet) for IPv4.
-// Subnets broader than /8 (> 16 million hosts) are rejected to prevent resource exhaustion.
-const minIPv4Prefix = 8
+// minIPv4Prefix is the minimum allowed prefix length for IPv4 subnets.
+// Subnets broader than /16 (> 65536 addresses) are rejected to prevent resource exhaustion.
+const minIPv4Prefix = 16
 
 func HandleCreateSubnet(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
