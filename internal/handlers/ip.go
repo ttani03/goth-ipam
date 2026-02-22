@@ -4,11 +4,16 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/ttani03/goth-ipam/internal/database"
 	"github.com/ttani03/goth-ipam/internal/models"
 	"github.com/ttani03/goth-ipam/internal/templates"
 )
+
+// hostnameRegex validates RFC 1123 hostnames (labels separated by dots,
+// each label: 1–63 alphanumeric chars or hyphens, not starting/ending with a hyphen).
+var hostnameRegex = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$`)
 
 func HandleSubnetDetail(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
@@ -67,6 +72,11 @@ func HandleAllocateIP(w http.ResponseWriter, r *http.Request) {
 
 	address := r.FormValue("address")
 	hostname := r.FormValue("hostname")
+
+	if hostname != "" && !hostnameRegex.MatchString(hostname) {
+		http.Error(w, "Invalid hostname format", http.StatusBadRequest)
+		return
+	}
 
 	var hostnameArg interface{}
 	if hostname != "" {

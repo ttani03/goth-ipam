@@ -13,9 +13,7 @@ var DB *pgxpool.Pool
 func Connect() error {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		// Fallback for local development only.
-		// In production, always set the DATABASE_URL environment variable.
-		dbURL = "postgres://ipam_user:change_me_in_production@localhost:5432/ipam_db"
+		return fmt.Errorf("DATABASE_URL environment variable is not set")
 	}
 
 	config, err := pgxpool.ParseConfig(dbURL)
