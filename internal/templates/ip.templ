@@ -5,11 +5,21 @@ import (
 	"github.com/ttani03/goth-ipam/internal/models"
 )
 
+// PaginationMeta holds the data needed to render pagination controls.
+type PaginationMeta struct {
+	Page         int    // current page (1-indexed)
+	PageSize     int    // items per page (30 / 50 / 100)
+	TotalCount   int    // total number of IPs matching the current filter
+	TotalPages   int    // total number of pages
+	StatusFilter string // "" or "all" = no filter, otherwise "available" / "allocated" / "reserved"
+}
+
 // SubnetDetail renders the subnet detail page.
 // subnet:       the subnet being viewed.
-// ips:          all IP addresses belonging to this subnet.
+// ips:          paginated IP addresses for the current page.
 // availableIPs: IPs with no host assigned yet (shown as options in the Allocate IP modal).
-templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.IP) {
+// pg:           pagination metadata.
+templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.IP, pg PaginationMeta) {
 	@Body(fmt.Sprintf("Subnet: %s", subnet.Name)) {
 		<div class="flex flex-col gap-6">
 
@@ -76,16 +86,44 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 				</div>
 			</div>
 
-			// IP address table with a client-side status filter.
+			// IP address table with server-side pagination and status filter.
 			<div class="bg-base-100 rounded-xl shadow-xl overflow-hidden border border-base-300">
 
-				// Filter buttons — clicking one calls filterIPs() to show/hide rows by status
-				// without any server round-trip.
+				// Filter buttons — submit form to reload page with chosen status filter.
+				// The current pageSize is preserved in the URL so pagination stays consistent.
 				<div class="flex flex-wrap gap-2 p-4 border-b border-base-300">
-					<button id="filter-all" onclick="filterIPs('all')" class="btn btn-sm btn-active">All</button>
-					<button id="filter-available" onclick="filterIPs('available')" class="btn btn-sm">Available</button>
-					<button id="filter-allocated" onclick="filterIPs('allocated')" class="btn btn-sm">Allocated</button>
-					<button id="filter-reserved" onclick="filterIPs('reserved')" class="btn btn-sm">Reserved</button>
+					<a
+						id="filter-all"
+						href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=1", subnet.ID, pg.PageSize)) }
+						class={ "btn btn-sm", templ.KV("btn-active", pg.StatusFilter == "" || pg.StatusFilter == "all") }
+					>All</a>
+					<a
+						id="filter-available"
+						href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=1&status=available", subnet.ID, pg.PageSize)) }
+						class={ "btn btn-sm", templ.KV("btn-active", pg.StatusFilter == "available") }
+					>Available</a>
+					<a
+						id="filter-allocated"
+						href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=1&status=allocated", subnet.ID, pg.PageSize)) }
+						class={ "btn btn-sm", templ.KV("btn-active", pg.StatusFilter == "allocated") }
+					>Allocated</a>
+					<a
+						id="filter-reserved"
+						href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=1&status=reserved", subnet.ID, pg.PageSize)) }
+						class={ "btn btn-sm", templ.KV("btn-active", pg.StatusFilter == "reserved") }
+					>Reserved</a>
+
+					// Spacer to push page-size selector to the right
+					<div class="ml-auto flex items-center gap-2">
+						<span class="text-sm text-base-content/60">Rows per page:</span>
+						// Page-size links — switching resets to page 1.
+						for _, size := range []int{30, 50, 100} {
+							<a
+								href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=1&status=%s", subnet.ID, size, pg.StatusFilter)) }
+								class={ "btn btn-xs", templ.KV("btn-active", pg.PageSize == size) }
+							>{ fmt.Sprintf("%d", size) }</a>
+						}
+					</div>
 				</div>
 
 				<div class="overflow-x-auto">
@@ -99,8 +137,7 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 						</thead>
 						<tbody>
 							for _, ip := range ips {
-								// data-status stores the IP status so filterIPs() can compare it
-								// against the selected filter without re-querying the server.
+								// data-status stores the IP status for potential JS use.
 								<tr class="hover ip-row" data-status={ ip.Status }>
 									<td class="font-mono font-bold text-primary">{ ip.Address }</td>
 									<td>
@@ -128,36 +165,82 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 							if len(ips) == 0 {
 								<tr id="empty-row">
 									<td colspan="3" class="text-center py-10 text-base-content/40 italic">
-										No IP addresses in this subnet yet.
+										No IP addresses found.
 									</td>
 								</tr>
 							}
 						</tbody>
 					</table>
 				</div>
+
+				// Pagination controls — shown only when there are multiple pages.
+				<div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-base-300">
+					// Total count info
+					<span class="text-sm text-base-content/60">
+						{ fmt.Sprintf("Total: %d addresses", pg.TotalCount) }
+					</span>
+
+					// Page navigation
+					if pg.TotalPages > 1 {
+						<div class="join">
+							// Previous button — disabled on first page.
+							if pg.Page > 1 {
+								<a
+									href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=%d&status=%s", subnet.ID, pg.PageSize, pg.Page-1, pg.StatusFilter)) }
+									class="join-item btn btn-sm"
+								>«</a>
+							} else {
+								<button class="join-item btn btn-sm btn-disabled">«</button>
+							}
+
+							// Page number buttons — show at most 5 pages around current page.
+							for _, pn := range pageNumbers(pg.Page, pg.TotalPages) {
+								if pn == pg.Page {
+									<button class="join-item btn btn-sm btn-active">{ fmt.Sprintf("%d", pn) }</button>
+								} else {
+									<a
+										href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=%d&status=%s", subnet.ID, pg.PageSize, pn, pg.StatusFilter)) }
+										class="join-item btn btn-sm"
+									>{ fmt.Sprintf("%d", pn) }</a>
+								}
+							}
+
+							// Next button — disabled on last page.
+							if pg.Page < pg.TotalPages {
+								<a
+									href={ templ.SafeURL(fmt.Sprintf("/subnets/%s?pageSize=%d&page=%d&status=%s", subnet.ID, pg.PageSize, pg.Page+1, pg.StatusFilter)) }
+									class="join-item btn btn-sm"
+								>»</a>
+							} else {
+								<button class="join-item btn btn-sm btn-disabled">»</button>
+							}
+						</div>
+					}
+				</div>
 			</div>
 		</div>
-
-		<script>
-			// filterIPs toggles the visibility of IP table rows based on their data-status attribute.
-			// status: 'all' | 'available' | 'allocated' | 'reserved'
-			function filterIPs(status) {
-				// Update the active state of filter buttons.
-				['all', 'available', 'allocated', 'reserved'].forEach(function(s) {
-					var btn = document.getElementById('filter-' + s);
-					if (btn) btn.classList.toggle('btn-active', s === status);
-				});
-
-				// Show rows that match the selected status; hide others.
-				var rows = document.querySelectorAll('.ip-row');
-				rows.forEach(function(row) {
-					if (status === 'all' || row.dataset.status === status) {
-						row.style.display = '';
-					} else {
-						row.style.display = 'none';
-					}
-				});
-			}
-		</script>
 	}
+}
+
+// pageNumbers returns a slice of page numbers to display in the pagination bar.
+// It shows at most 5 pages centered around the current page.
+func pageNumbers(current, total int) []int {
+	const window = 5
+	start := current - window/2
+	if start < 1 {
+		start = 1
+	}
+	end := start + window - 1
+	if end > total {
+		end = total
+		start = end - window + 1
+		if start < 1 {
+			start = 1
+		}
+	}
+	pages := make([]int, 0, end-start+1)
+	for i := start; i <= end; i++ {
+		pages = append(pages, i)
+	}
+	return pages
 }
