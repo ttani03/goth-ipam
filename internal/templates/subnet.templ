@@ -1,0 +1,78 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/ttani03/goth-ipam/internal/models"
+)
+
+templ SubnetList(subnets []models.Subnet) {
+	@Body("Subnet Management") {
+		<div class="flex flex-col gap-8">
+			<div class="flex justify-between items-center">
+				<h1 class="text-3xl font-bold">Subnets</h1>
+				<label for="create-subnet-modal" class="btn btn-primary">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+					Add Subnet
+				</label>
+			</div>
+			<!-- Create Subnet Modal -->
+			<input type="checkbox" id="create-subnet-modal" class="modal-toggle"/>
+			<div class="modal">
+				<div class="modal-box">
+					<h3 class="font-bold text-lg mb-4">Create New Subnet</h3>
+					<form hx-post="/subnets" hx-target="#body" hx-swap="outerHTML" class="flex flex-col gap-4">
+						<div class="form-control w-full">
+							<label class="label"><span class="label-text font-semibold">Subnet Name</span></label>
+							<input type="text" name="name" placeholder="e.g. Production LAN" class="input input-bordered w-full" required/>
+						</div>
+						<div class="form-control w-full">
+							<label class="label"><span class="label-text font-semibold">CIDR Range</span></label>
+							<input type="text" name="cidr" placeholder="10.0.0.0/24" class="input input-bordered w-full" required/>
+						</div>
+						<div class="modal-action">
+							<label for="create-subnet-modal" class="btn btn-ghost">Cancel</label>
+							<button type="submit" class="btn btn-primary" onclick="document.getElementById('create-subnet-modal').checked = false">Create Subnet</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div id="subnet-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				for _, s := range subnets {
+					@SubnetCard(s)
+				}
+				if len(subnets) == 0 {
+					<div class="col-span-full py-12 text-center bg-base-100 rounded-xl border-2 border-dashed border-base-300">
+						<p class="text-base-content/60">No subnets found. Click "Add Subnet" to create one.</p>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
+
+templ SubnetCard(s models.Subnet) {
+	<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-300 group">
+		<div class="card-body">
+			<div class="flex justify-between items-start">
+				<div>
+					<h2 class="card-title text-primary italic font-mono mb-1">{ s.CIDR }</h2>
+					<p class="text-xl font-semibold">{ s.Name }</p>
+				</div>
+				<div class="card-actions">
+					<button
+						hx-delete={ fmt.Sprintf("/subnets/%s", s.ID) }
+						hx-confirm={ fmt.Sprintf("Are you sure you want to delete %s (%s)?", s.Name, s.CIDR) }
+						hx-target="closest .card"
+						hx-swap="outerHTML"
+						class="btn btn-circle btn-ghost btn-sm text-error opacity-0 group-hover:opacity-100 transition-opacity"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+					</button>
+				</div>
+			</div>
+			<div class="card-actions justify-end mt-4">
+				<a href={ templ.SafeURL(fmt.Sprintf("/subnets/%s", s.ID)) } class="btn btn-secondary btn-sm">View Details</a>
+			</div>
+		</div>
+	</div>
+}

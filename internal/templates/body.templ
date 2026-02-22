@@ -1,0 +1,12 @@
+package templates
+
+templ Body(title string) {
+	@Head(title) {
+		<body clas="bg-base-200 min-h-screen">
+			@Header()
+			<main class="container mx-auto px-4 pb-12" id="body">
+				{ children... }
+			</main>
+		</body>
+	}
+}

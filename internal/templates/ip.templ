@@ -1,0 +1,134 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/ttani03/goth-ipam/internal/models"
+)
+
+templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.IP) {
+	@Body(fmt.Sprintf("Subnet: %s", subnet.Name)) {
+		<div class="flex flex-col gap-6">
+			<div class="text-sm breadcrumbs">
+				<ul>
+					<li><a href="/">Subnets</a></li>
+					<li>{ subnet.Name }</li>
+				</ul>
+			</div>
+			<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+				<div>
+					<h1 class="text-3xl font-bold flex items-center gap-3">
+						{ subnet.Name }
+						<div class="badge badge-lg font-mono">{ subnet.CIDR }</div>
+					</h1>
+					<p class="text-base-content/60 mt-1">Created on { subnet.CreatedAt.Format("2006-01-02 15:04:05") }</p>
+				</div>
+				<label for="allocate-ip-modal" class="btn btn-success">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+					Allocate IP
+				</label>
+			</div>
+			<!-- Allocate IP Modal -->
+			<input type="checkbox" id="allocate-ip-modal" class="modal-toggle"/>
+			<div class="modal">
+				<div class="modal-box">
+					<h3 class="font-bold text-lg mb-4">Allocate IP Address</h3>
+					if len(availableIPs) == 0 {
+						<p class="text-base-content/60 italic">No available IP addresses in this subnet.</p>
+						<div class="modal-action">
+							<label for="allocate-ip-modal" class="btn btn-ghost">Close</label>
+						</div>
+					} else {
+						<form action={ templ.SafeURL(fmt.Sprintf("/subnets/%s/ips", subnet.ID)) } method="POST" class="flex flex-col gap-4">
+							<div class="form-control w-full">
+								<label class="label"><span class="label-text font-semibold">IP Address</span></label>
+								<select name="address" class="select select-bordered w-full" required>
+									<option value="" disabled selected>-- Select an available IP --</option>
+									for _, ip := range availableIPs {
+										<option value={ ip.Address }>{ ip.Address }</option>
+									}
+								</select>
+							</div>
+							<div class="form-control w-full">
+								<label class="label"><span class="label-text font-semibold">Hostname</span></label>
+								<input type="text" name="hostname" placeholder="e.g. web-server-01" class="input input-bordered w-full"/>
+							</div>
+							<div class="modal-action">
+								<label for="allocate-ip-modal" class="btn btn-ghost">Cancel</label>
+								<button type="submit" class="btn btn-success">Allocate</button>
+							</div>
+						</form>
+					}
+				</div>
+			</div>
+			<div class="bg-base-100 rounded-xl shadow-xl overflow-hidden border border-base-300">
+				<!-- Status Filter -->
+				<div class="flex flex-wrap gap-2 p-4 border-b border-base-300">
+					<button id="filter-all" onclick="filterIPs('all')" class="btn btn-sm btn-active">All</button>
+					<button id="filter-available" onclick="filterIPs('available')" class="btn btn-sm">Available</button>
+					<button id="filter-allocated" onclick="filterIPs('allocated')" class="btn btn-sm">Allocated</button>
+					<button id="filter-reserved" onclick="filterIPs('reserved')" class="btn btn-sm">Reserved</button>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="table table-zebra w-full" id="ip-table">
+						<thead>
+							<tr>
+								<th class="bg-base-200">IP Address</th>
+								<th class="bg-base-200">Status</th>
+								<th class="bg-base-200">Hostname</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, ip := range ips {
+								<tr class="hover ip-row" data-status={ ip.Status }>
+									<td class="font-mono font-bold text-primary">{ ip.Address }</td>
+									<td>
+										if ip.Status == "allocated" {
+											<div class="badge badge-success gap-2">{ ip.Status }</div>
+										} else if ip.Status == "reserved" {
+											<div class="badge badge-warning gap-2">{ ip.Status }</div>
+										} else {
+											<div class="badge badge-ghost gap-2">{ ip.Status }</div>
+										}
+									</td>
+									<td>
+										if ip.Hostname != nil {
+											<span class="font-semibold">{ *ip.Hostname }</span>
+										} else {
+											<span class="text-base-content/40 italic">not set</span>
+										}
+									</td>
+								</tr>
+							}
+							if len(ips) == 0 {
+								<tr id="empty-row">
+									<td colspan="3" class="text-center py-10 text-base-content/40 italic">
+										No IP addresses in this subnet yet.
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<script>
+			function filterIPs(status) {
+				// Update active button style
+				['all', 'available', 'allocated', 'reserved'].forEach(function(s) {
+					var btn = document.getElementById('filter-' + s);
+					if (btn) btn.classList.toggle('btn-active', s === status);
+				});
+
+				// Show/hide rows
+				var rows = document.querySelectorAll('.ip-row');
+				rows.forEach(function(row) {
+					if (status === 'all' || row.dataset.status === status) {
+						row.style.display = '';
+					} else {
+						row.style.display = 'none';
+					}
+				});
+			}
+		</script>
+	}
+}

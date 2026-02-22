@@ -1,16 +1,15 @@
 package templates
 
-templ Base(title string) {
+templ Head(title string) {
 	<!DOCTYPE html>
-	<html lang="ja">
+	<html lang="ja" data-theme="light">
 		<head>
 			<meta charset="UTF-8"/>
-			<title>{ title }</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } | GOTH IPAM</title>
 			<script src="https://unpkg.com/htmx.org@2.0.8"></script>
 			<link href="/static/css/global.css" rel="stylesheet"/>
 		</head>
-		<body class="bg-gray-100 min-h-screen">
-			{ children... }
-		</body>
+		{ children... }
 	</html>
 }
