@@ -1,4 +1,9 @@
-.PHONY: run build clean test
+.PHONY: run dev build clean test
+
+dev:
+	@echo "Starting PostgreSQL..."
+	@docker compose up -d postgres
+	@make run
 
 run:
 	@echo "Starting development server..."
