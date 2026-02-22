@@ -5,15 +5,22 @@ import (
 	"github.com/ttani03/goth-ipam/internal/models"
 )
 
+// SubnetDetail renders the subnet detail page.
+// subnet:       the subnet being viewed.
+// ips:          all IP addresses belonging to this subnet.
+// availableIPs: IPs with no host assigned yet (shown as options in the Allocate IP modal).
 templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.IP) {
 	@Body(fmt.Sprintf("Subnet: %s", subnet.Name)) {
 		<div class="flex flex-col gap-6">
+
+			// Breadcrumb navigation — lets the user return to the subnet list.
 			<div class="text-sm breadcrumbs">
 				<ul>
 					<li><a href="/">Subnets</a></li>
 					<li>{ subnet.Name }</li>
 				</ul>
 			</div>
+
 			<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<div>
 					<h1 class="text-3xl font-bold flex items-center gap-3">
@@ -22,25 +29,32 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 					</h1>
 					<p class="text-base-content/60 mt-1">Created on { subnet.CreatedAt.Format("2006-01-02 15:04:05") }</p>
 				</div>
+				// Clicking this label opens the Allocate IP modal by toggling its hidden checkbox.
 				<label for="allocate-ip-modal" class="btn btn-success">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
 					Allocate IP
 				</label>
 			</div>
-			<!-- Allocate IP Modal -->
+
+			// Allocate IP Modal
+			// DaisyUI modals are controlled by a hidden checkbox: checking it shows the modal.
 			<input type="checkbox" id="allocate-ip-modal" class="modal-toggle"/>
 			<div class="modal">
 				<div class="modal-box">
 					<h3 class="font-bold text-lg mb-4">Allocate IP Address</h3>
 					if len(availableIPs) == 0 {
+						// No available IPs — show an informational message and a close button only.
 						<p class="text-base-content/60 italic">No available IP addresses in this subnet.</p>
 						<div class="modal-action">
 							<label for="allocate-ip-modal" class="btn btn-ghost">Close</label>
 						</div>
 					} else {
+						// Standard HTML form submission (not htmx) to POST /subnets/{id}/ips.
+						// templ.SafeURL sanitizes the subnet ID before embedding it in the action URL.
 						<form action={ templ.SafeURL(fmt.Sprintf("/subnets/%s/ips", subnet.ID)) } method="POST" class="flex flex-col gap-4">
 							<div class="form-control w-full">
 								<label class="label"><span class="label-text font-semibold">IP Address</span></label>
+								// Dropdown populated with only the unassigned IPs of this subnet.
 								<select name="address" class="select select-bordered w-full" required>
 									<option value="" disabled selected>-- Select an available IP --</option>
 									for _, ip := range availableIPs {
@@ -50,6 +64,7 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 							</div>
 							<div class="form-control w-full">
 								<label class="label"><span class="label-text font-semibold">Hostname</span></label>
+								// Hostname is optional — no required attribute.
 								<input type="text" name="hostname" placeholder="e.g. web-server-01" class="input input-bordered w-full"/>
 							</div>
 							<div class="modal-action">
@@ -60,14 +75,19 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 					}
 				</div>
 			</div>
+
+			// IP address table with a client-side status filter.
 			<div class="bg-base-100 rounded-xl shadow-xl overflow-hidden border border-base-300">
-				<!-- Status Filter -->
+
+				// Filter buttons — clicking one calls filterIPs() to show/hide rows by status
+				// without any server round-trip.
 				<div class="flex flex-wrap gap-2 p-4 border-b border-base-300">
 					<button id="filter-all" onclick="filterIPs('all')" class="btn btn-sm btn-active">All</button>
 					<button id="filter-available" onclick="filterIPs('available')" class="btn btn-sm">Available</button>
 					<button id="filter-allocated" onclick="filterIPs('allocated')" class="btn btn-sm">Allocated</button>
 					<button id="filter-reserved" onclick="filterIPs('reserved')" class="btn btn-sm">Reserved</button>
 				</div>
+
 				<div class="overflow-x-auto">
 					<table class="table table-zebra w-full" id="ip-table">
 						<thead>
@@ -79,9 +99,13 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 						</thead>
 						<tbody>
 							for _, ip := range ips {
+								// data-status stores the IP status so filterIPs() can compare it
+								// against the selected filter without re-querying the server.
 								<tr class="hover ip-row" data-status={ ip.Status }>
 									<td class="font-mono font-bold text-primary">{ ip.Address }</td>
 									<td>
+										// Badge color reflects the allocation status:
+										// green = allocated, yellow = reserved, grey = available (or other).
 										if ip.Status == "allocated" {
 											<div class="badge badge-success gap-2">{ ip.Status }</div>
 										} else if ip.Status == "reserved" {
@@ -91,6 +115,8 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 										}
 									</td>
 									<td>
+										// Hostname is a pointer (*string) because it is nullable in the DB.
+										// Dereference with * only after confirming it is not nil.
 										if ip.Hostname != nil {
 											<span class="font-semibold">{ *ip.Hostname }</span>
 										} else {
@@ -111,15 +137,18 @@ templ SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.
 				</div>
 			</div>
 		</div>
+
 		<script>
+			// filterIPs toggles the visibility of IP table rows based on their data-status attribute.
+			// status: 'all' | 'available' | 'allocated' | 'reserved'
 			function filterIPs(status) {
-				// Update active button style
+				// Update the active state of filter buttons.
 				['all', 'available', 'allocated', 'reserved'].forEach(function(s) {
 					var btn = document.getElementById('filter-' + s);
 					if (btn) btn.classList.toggle('btn-active', s === status);
 				});
 
-				// Show/hide rows
+				// Show rows that match the selected status; hide others.
 				var rows = document.querySelectorAll('.ip-row');
 				rows.forEach(function(row) {
 					if (status === 'all' || row.dataset.status === status) {

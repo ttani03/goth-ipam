@@ -13,6 +13,10 @@ import (
 	"github.com/ttani03/goth-ipam/internal/models"
 )
 
+// SubnetDetail renders the subnet detail page.
+// subnet:       the subnet being viewed.
+// ips:          all IP addresses belonging to this subnet.
+// availableIPs: IPs with no host assigned yet (shown as options in the Allocate IP modal).
 func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.IP) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -53,7 +57,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(subnet.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 14, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 20, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -66,7 +70,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(subnet.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 20, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 27, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -79,7 +83,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(subnet.CIDR)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 21, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 28, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -92,36 +96,36 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(subnet.CreatedAt.Format("2006-01-02 15:04:05"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 23, Col: 101}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 30, Col: 101}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</p></div><label for=\"allocate-ip-modal\" class=\"btn btn-success\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mr-2\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg> Allocate IP</label></div><!-- Allocate IP Modal --><input type=\"checkbox\" id=\"allocate-ip-modal\" class=\"modal-toggle\"><div class=\"modal\"><div class=\"modal-box\"><h3 class=\"font-bold text-lg mb-4\">Allocate IP Address</h3>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</p></div><label for=\"allocate-ip-modal\" class=\"btn btn-success\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 mr-2\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 4v16m8-8H4\"></path></svg> Allocate IP</label></div><input type=\"checkbox\" id=\"allocate-ip-modal\" class=\"modal-toggle\"><div class=\"modal\"><div class=\"modal-box\"><h3 class=\"font-bold text-lg mb-4\">Allocate IP Address</h3>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(availableIPs) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<p class=\"text-base-content/60 italic\">No available IP addresses in this subnet.</p><div class=\"modal-action\"><label for=\"allocate-ip-modal\" class=\"btn btn-ghost\">Close</label></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " <p class=\"text-base-content/60 italic\">No available IP addresses in this subnet.</p><div class=\"modal-action\"><label for=\"allocate-ip-modal\" class=\"btn btn-ghost\">Close</label></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<form action=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "  <form action=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 templ.SafeURL
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(fmt.Sprintf("/subnets/%s/ips", subnet.ID)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 41, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 54, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" method=\"POST\" class=\"flex flex-col gap-4\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">IP Address</span></label> <select name=\"address\" class=\"select select-bordered w-full\" required><option value=\"\" disabled selected>-- Select an available IP --</option> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" method=\"POST\" class=\"flex flex-col gap-4\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">IP Address</span></label><select name=\"address\" class=\"select select-bordered w-full\" required><option value=\"\" disabled selected>-- Select an available IP --</option> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -133,7 +137,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Address)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 47, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 61, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -146,7 +150,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Address)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 47, Col: 51}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 61, Col: 51}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -157,24 +161,24 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</select></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Hostname</span></label> <input type=\"text\" name=\"hostname\" placeholder=\"e.g. web-server-01\" class=\"input input-bordered w-full\"></div><div class=\"modal-action\"><label for=\"allocate-ip-modal\" class=\"btn btn-ghost\">Cancel</label> <button type=\"submit\" class=\"btn btn-success\">Allocate</button></div></form>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</select></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Hostname</span></label><input type=\"text\" name=\"hostname\" placeholder=\"e.g. web-server-01\" class=\"input input-bordered w-full\"></div><div class=\"modal-action\"><label for=\"allocate-ip-modal\" class=\"btn btn-ghost\">Cancel</label> <button type=\"submit\" class=\"btn btn-success\">Allocate</button></div></form>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div><div class=\"bg-base-100 rounded-xl shadow-xl overflow-hidden border border-base-300\"><!-- Status Filter --><div class=\"flex flex-wrap gap-2 p-4 border-b border-base-300\"><button id=\"filter-all\" onclick=\"filterIPs('all')\" class=\"btn btn-sm btn-active\">All</button> <button id=\"filter-available\" onclick=\"filterIPs('available')\" class=\"btn btn-sm\">Available</button> <button id=\"filter-allocated\" onclick=\"filterIPs('allocated')\" class=\"btn btn-sm\">Allocated</button> <button id=\"filter-reserved\" onclick=\"filterIPs('reserved')\" class=\"btn btn-sm\">Reserved</button></div><div class=\"overflow-x-auto\"><table class=\"table table-zebra w-full\" id=\"ip-table\"><thead><tr><th class=\"bg-base-200\">IP Address</th><th class=\"bg-base-200\">Status</th><th class=\"bg-base-200\">Hostname</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div><div class=\"bg-base-100 rounded-xl shadow-xl overflow-hidden border border-base-300\"><div class=\"flex flex-wrap gap-2 p-4 border-b border-base-300\"><button id=\"filter-all\" onclick=\"filterIPs('all')\" class=\"btn btn-sm btn-active\">All</button> <button id=\"filter-available\" onclick=\"filterIPs('available')\" class=\"btn btn-sm\">Available</button> <button id=\"filter-allocated\" onclick=\"filterIPs('allocated')\" class=\"btn btn-sm\">Allocated</button> <button id=\"filter-reserved\" onclick=\"filterIPs('reserved')\" class=\"btn btn-sm\">Reserved</button></div><div class=\"overflow-x-auto\"><table class=\"table table-zebra w-full\" id=\"ip-table\"><thead><tr><th class=\"bg-base-200\">IP Address</th><th class=\"bg-base-200\">Status</th><th class=\"bg-base-200\">Hostname</th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, ip := range ips {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<tr class=\"hover ip-row\" data-status=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "  <tr class=\"hover ip-row\" data-status=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Status)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 82, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 104, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -187,7 +191,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Address)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 83, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 105, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -205,7 +209,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Status)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 86, Col: 61}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 110, Col: 61}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
@@ -223,7 +227,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var13 string
 					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Status)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 88, Col: 61}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 112, Col: 61}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
@@ -241,7 +245,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var14 string
 					templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(ip.Status)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 90, Col: 59}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 114, Col: 59}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 					if templ_7745c5c3_Err != nil {
@@ -264,7 +268,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					var templ_7745c5c3_Var15 string
 					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(*ip.Hostname)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 95, Col: 53}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/ip.templ`, Line: 121, Col: 53}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 					if templ_7745c5c3_Err != nil {
@@ -291,7 +295,7 @@ func SubnetDetail(subnet models.Subnet, ips []models.IP, availableIPs []models.I
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</tbody></table></div></div></div><script>\n\t\t\tfunction filterIPs(status) {\n\t\t\t\t// Update active button style\n\t\t\t\t['all', 'available', 'allocated', 'reserved'].forEach(function(s) {\n\t\t\t\t\tvar btn = document.getElementById('filter-' + s);\n\t\t\t\t\tif (btn) btn.classList.toggle('btn-active', s === status);\n\t\t\t\t});\n\n\t\t\t\t// Show/hide rows\n\t\t\t\tvar rows = document.querySelectorAll('.ip-row');\n\t\t\t\trows.forEach(function(row) {\n\t\t\t\t\tif (status === 'all' || row.dataset.status === status) {\n\t\t\t\t\t\trow.style.display = '';\n\t\t\t\t\t} else {\n\t\t\t\t\t\trow.style.display = 'none';\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t}\n\t\t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</tbody></table></div></div></div><script>\n\t\t\t// filterIPs toggles the visibility of IP table rows based on their data-status attribute.\n\t\t\t// status: 'all' | 'available' | 'allocated' | 'reserved'\n\t\t\tfunction filterIPs(status) {\n\t\t\t\t// Update the active state of filter buttons.\n\t\t\t\t['all', 'available', 'allocated', 'reserved'].forEach(function(s) {\n\t\t\t\t\tvar btn = document.getElementById('filter-' + s);\n\t\t\t\t\tif (btn) btn.classList.toggle('btn-active', s === status);\n\t\t\t\t});\n\n\t\t\t\t// Show rows that match the selected status; hide others.\n\t\t\t\tvar rows = document.querySelectorAll('.ip-row');\n\t\t\t\trows.forEach(function(row) {\n\t\t\t\t\tif (status === 'all' || row.dataset.status === status) {\n\t\t\t\t\t\trow.style.display = '';\n\t\t\t\t\t} else {\n\t\t\t\t\t\trow.style.display = 'none';\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t}\n\t\t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

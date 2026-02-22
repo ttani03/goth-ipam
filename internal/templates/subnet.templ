@@ -5,17 +5,22 @@ import (
 	"github.com/ttani03/goth-ipam/internal/models"
 )
 
+// SubnetList renders the subnet list page.
+// subnets: all subnets fetched from the database.
 templ SubnetList(subnets []models.Subnet) {
 	@Body("Subnet Management") {
 		<div class="flex flex-col gap-8">
 			<div class="flex justify-between items-center">
 				<h1 class="text-3xl font-bold">Subnets</h1>
+				// Clicking this label toggles the modal checkbox, opening the Create Subnet modal.
 				<label for="create-subnet-modal" class="btn btn-primary">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
 					Add Subnet
 				</label>
 			</div>
-			<!-- Create Subnet Modal -->
+
+			// Create Subnet Modal
+			// DaisyUI modals are controlled by a hidden checkbox: checking it shows the modal.
 			<input type="checkbox" id="create-subnet-modal" class="modal-toggle"/>
 			<div class="modal">
 				<div class="modal-box">
@@ -36,10 +41,13 @@ templ SubnetList(subnets []models.Subnet) {
 					</form>
 				</div>
 			</div>
+
+			// Subnet card grid — responsive columns (1 / 2 / 3 depending on screen width).
 			<div id="subnet-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				for _, s := range subnets {
 					@SubnetCard(s)
 				}
+				// Show an empty-state message when no subnets exist yet.
 				if len(subnets) == 0 {
 					<div class="col-span-full py-12 text-center bg-base-100 rounded-xl border-2 border-dashed border-base-300">
 						<p class="text-base-content/60">No subnets found. Click "Add Subnet" to create one.</p>
@@ -50,6 +58,8 @@ templ SubnetList(subnets []models.Subnet) {
 	}
 }
 
+// SubnetCard renders a single subnet as a card with a delete button and a detail link.
+// s: the subnet data to display.
 templ SubnetCard(s models.Subnet) {
 	<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all border border-base-300 group">
 		<div class="card-body">
@@ -71,6 +81,7 @@ templ SubnetCard(s models.Subnet) {
 				</div>
 			</div>
 			<div class="card-actions justify-end mt-4">
+				// templ.SafeURL sanitizes user-controlled data (s.ID) before embedding it in an href.
 				<a href={ templ.SafeURL(fmt.Sprintf("/subnets/%s", s.ID)) } class="btn btn-secondary btn-sm">View Details</a>
 			</div>
 		</div>
